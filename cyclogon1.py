@@ -2,46 +2,100 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
-x = np.linspace(-10,10,100)
-y = 0* x
+def obrot(x,y,osx,osy,alfa):
+    x = (x - osx) * np.cos(alfa) - (y - osy) * np.sin(alfa) + osx
+    y = (x - osx) * np.sin(alfa) + (y - osy) * np.cos(alfa) + osy
+    return x, y
+
+x = np.linspace(-10,20,1000)
+wzor_funkcji = input("Wpisz wzór funkcji od argumentu x: ")
+f = lambda x: eval(wzor_funkcji)
+y = f(x)
 fig, ax = plt.subplots()
-ax.set_xlim(-10,20)
-ax.set_ylim(-10,10)
+ax.set_xlim(-5,20)
+ax.set_ylim(-5,10)
 funkcja = ax.plot(x,y)
-#xa, ya = input("Podaj punkt 1: ").split(",")
-#xb, yb = input("Podaj punkt 2: ").split(",")
-#xc, yc = input("Podaj punkt 3: ").split(",")
-#xd, yd = input("Podaj punkt 4: ").split(",")
-xa, xb, xc, xd = 0, 0, 4, 4
-ya, yb, yc, yd = 0, 4, 4, 0
-figura = ax.plot([xa,xb,xc,xd,xa],[ya,yb,yc,yd,ya])
-r1= np.sqrt((xa-xd)**2+(ya-yd)**2)
-r2= np.sqrt((xd-xb)**2+(yd-yb)**2)
-r3 =np.sqrt((xa-xb)**2+(ya-yb)**2)
+xa, ya = eval(input("Podaj punkt 1, który będzie zakreślać cyklogon: "))
+xb, yb = eval(input("Podaj punkt 2, sąsiedni do punktu 1: "))
+xc, yc = eval(input("Podaj punkt 3, sąsiedni do punktu 2: "))
+xd, yd = eval(input("Podaj punkt 4, sąsiedni do punktu 3: "))
+#xa, xb, xc, xd = 0, 0, 2, 1
+#ya, yb, yc, yd = 0, 1, 1, 0
+if(ya<f(xa)):
+    yb = yb + f(xa) - ya
+    yc = yc + f(xa) - ya
+    yd = yd + f(xa) - ya
+    ya = f(xa)
+figura, = ax.plot(0,0)
 sladx = []
 slady = []
 slad, = ax.plot(0,0)
-lklatek = 100
+lklatek = 1000
+os = 1
+prevos = 0
 def frame(i):
-    alfa = np.pi * 3/2 * i/lklatek
-    if(alfa < np.pi/2):
-        xfig = -r1*np.cos(alfa) + xa + r1
-        yfig = r1 * np.sin(alfa) + ya
-    elif (alfa >= np.pi / 2 and alfa < np.pi):
-        offsetal = -np.pi/4
-        xfig = -r2 * np.cos(alfa+offsetal) + xa + + r1 + np.sqrt((xd-xc)**2+(yd-yc)**2)
-        yfig = r2 * np.sin(alfa+offsetal) + ya
-    elif (alfa >= np.pi and alfa < np.pi *3/2):
-        offsetal = -np.pi/2
-        xfig = -r3 * np.cos(alfa+offsetal) + xa + r1 +np.sqrt((xc-xb)**2+(yc-yb)**2) + np.sqrt((xd-xc)**2+(yd-yc)**2)
-        yfig = r3 * np.sin(alfa+offsetal) + ya
+    global os, prevos, xa,ya,xb,yb,xc,yc,xd,yd
+    alfa = -np.pi / 1000
+    if(os == 1): # punkt a osią
+        xb, yb = obrot(xb, yb, xa, ya, alfa)
+        xc, yc = obrot(xc, yc, xa, ya, alfa)
+        xd, yd = obrot(xd, yd, xa, ya, alfa)
+        if(yb<=f(xb) and prevos != 2):
+            os = 2
+            prevos = 1
+        elif(yc<=f(xc) and prevos != 3):
+            os = 3
+            prevos = 1
+        elif(yd<=f(xd) and prevos != 4):
+            os = 4
+            prevos = 1
+    elif (os == 2):  # punkt b osią
+        xa, ya = obrot(xa, ya, xb, yb, alfa)
+        xc, yc = obrot(xc, yc, xb, yb, alfa)
+        xd, yd = obrot(xd, yd, xb, yb, alfa)
+        if (ya <= f(xa) and prevos != 1):
+            os = 1
+            prevos = 2
+        elif (yc <= f(xc) and prevos != 3):
+            os = 3
+            prevos = 2
+        elif (yd <= f(xd) and prevos != 4):
+            os = 4
+            prevos = 2
+    elif (os == 3):  # punkt c osią
+        xa, ya = obrot(xa, ya, xc, yc, alfa)
+        xb, yb = obrot(xb, yb, xc, yc, alfa)
+        xd, yd = obrot(xd, yd, xc, yc, alfa)
+        if (ya <= f(xa) and prevos != 1):
+            os = 1
+            prevos = 3
+        elif (yb <= f(xb) and prevos != 2):
+            os = 2
+            prevos = 3
+        elif (yd <= f(xd) and prevos != 4):
+            os = 4
+            prevos = 3
+    elif (os == 4):  # punkt d osią
+        xa, ya = obrot(xa, ya, xd, yd, alfa)
+        xb, yb = obrot(xb, yb, xd, yd, alfa)
+        xc, yc = obrot(xc, yc, xd, yd, alfa)
+        if (ya <= f(xa) and prevos != 1):
+            os = 1
+            prevos = 4
+        elif (yb <= f(xb) and prevos != 2):
+            os = 2
+            prevos = 4
+        elif (yc <= f(xc) and prevos != 3):
+            os = 3
+            prevos = 4
 
-    sladx.append(xfig)
-    slady.append(yfig)
+    figura.set_data([xa,xb,xc,xd,xa],[ya,yb,yc,yd,ya])
+    sladx.append(xa)
+    slady.append(ya)
     slad.set_data(sladx,slady)
-    return slad
+    return slad, figura
 
-animation = anim.FuncAnimation(fig, frame, frames=lklatek, interval=1)
+animation = anim.FuncAnimation(fig, frame, frames=lklatek, interval=10)
 
 
 plt.show()
