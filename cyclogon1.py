@@ -1,3 +1,5 @@
+# Jakub Poćwiardowski 184827
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
@@ -7,14 +9,20 @@ def obrot(x,y,osx,osy,alfa):
     y = (x - osx) * np.sin(alfa) + (y - osy) * np.cos(alfa) + osy
     return x, y
 
-x = np.linspace(-10,20,1000)
+x = np.linspace(0,30,1000)
 wzor_funkcji = input("Wpisz wzór funkcji od argumentu x: ")
 f = lambda x: eval(wzor_funkcji)
 y = f(x)
-fig, ax = plt.subplots()
-ax.set_xlim(-5,20)
-ax.set_ylim(-5,10)
-funkcja = ax.plot(x,y)
+z = np.zeros(y.size)
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+#fig, ax = plt.subplots()
+ax.set_xlim(0,30)
+ax.set_zlim(-5,10)
+#z = np.linspace(-2, 2, 100)
+#X, Z = np.meshgrid(x,z) #Chciałem zrobić to również na płaszczyznach, ale słaba jest wówczas widoczność i występują znaczne zacięcia
+#funkcja = ax.plot_surface(X,y,Z)
+funkcja = ax.plot(x,z,y)
 xa, ya = eval(input("Podaj punkt 1, który będzie zakreślać cyklogon: "))
 xb, yb = eval(input("Podaj punkt 2, sąsiedni do punktu 1: "))
 xc, yc = eval(input("Podaj punkt 3, sąsiedni do punktu 2: "))
@@ -29,13 +37,14 @@ if(ya<f(xa)):
 figura, = ax.plot(0,0)
 sladx = []
 slady = []
+sladz = []
 slad, = ax.plot(0,0)
 lklatek = 1000
 os = 1
 prevos = 0
 def frame(i):
     global os, prevos, xa,ya,xb,yb,xc,yc,xd,yd
-    alfa = -np.pi / 1000
+    alfa = -np.pi / 200
     if(os == 1): # punkt a osią
         xb, yb = obrot(xb, yb, xa, ya, alfa)
         xc, yc = obrot(xc, yc, xa, ya, alfa)
@@ -89,13 +98,17 @@ def frame(i):
             os = 3
             prevos = 4
 
-    figura.set_data([xa,xb,xc,xd,xa],[ya,yb,yc,yd,ya])
+    figura.set_xdata([xa,xb,xc,xd,xa])
+    figura.set_ydata(np.zeros(5))
+    figura.set_3d_properties([ya,yb,yc,yd,ya])
     sladx.append(xa)
     slady.append(ya)
-    slad.set_data(sladx,slady)
+    sladz.append(0)
+    slad.set_data(sladx,sladz)
+    slad.set_3d_properties(slady)
     return slad, figura
 
-animation = anim.FuncAnimation(fig, frame, frames=lklatek, interval=10)
+animation = anim.FuncAnimation(fig, frame, frames=lklatek, interval=1)
 
 
 plt.show()
