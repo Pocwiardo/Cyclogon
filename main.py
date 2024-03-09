@@ -1,66 +1,119 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import matplotlib.animation as anim
 
-def funkcja(x):
-    return 10*np.sin(x/5)
-#    return x**2 /10
+def obrot(x,y,osx,osy,alfa):
+    x = (x - osx) * np.cos(alfa) - (y - osy) * np.sin(alfa) + osx
+    y = (x - osx) * np.sin(alfa) + (y - osy) * np.cos(alfa) + osy
+    return x, y
 
-#func_formula = input("Wpisz wzór funkcji: ")
-
-#funkcja = lambda x: eval(func_formula)
-
-#x = np.linspace(0,20,21)
-#normalna funkcja
-#x = np.arange(-10,10, np.pi/100)
-#y = funkcja(x)
-param = np.linspace(0,2*np.pi,1000)
-x = 8*np.cos(param)
-y = 5*np.sin(param)
-dx = np.diff(x)
-dy = np.diff(y)
-katnach = np.arctan2(dy,dx)
-#pochodna = np.gradient(y,x)
-fig, ax = plt.subplots()
-ax.set_xlim(-10, 10)
-ax.set_ylim(-10, 10)
-#ax.set_ylim(-4, 4)
-#if(funkcja(10) < funkcja(0) -1 ):
-#    ax.invert_yaxis()
-#ax.set_aspect('equal')
-
-line, = ax.plot(x,y)
-kolo, = ax.plot(0,0)
-promien, = ax.plot(0,0)
+x = np.linspace(0,30,1000)
+wzor_funkcji = input("Enter function of argument x (in python convention eg. np.sin(x), 2*x): ")
+f = lambda x: eval(wzor_funkcji)
+y = f(x)
+z = np.zeros(y.size)
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.set_xlim(0,30)
+ax.set_zlim(-5,10)
+z = np.linspace(-1, 1, 2)
+X, Z = np.meshgrid(x,z)
+Y = f(X)
+funkcja = ax.plot_surface(X,Z,Y)
+xa, ya = eval(input("Enter first corner coordinates, separated by comma: "))
+xb, yb = eval(input("Enter second corner coordinates (adjacent to corner 1), separated by comma: "))
+xc, yc = eval(input("Enter third corner coordinates (adjacent to corner 2), separated by comma: "))
+xd, yd = eval(input("Enter fourth corner coordinates (adjacent to corner 3), separated by comma: "))
+if(ya<f(xa)):
+    yb = yb + f(xa) - ya
+    yc = yc + f(xa) - ya
+    yd = yd + f(xa) - ya
+    ya = f(xa)
+figura, = ax.plot(0,0)
 sladx = []
 slady = []
+sladz = []
 slad, = ax.plot(0,0)
-dzielnik = 50
+lklatek = 1000
+os = 1
+prevos = 0
 def frame(i):
+    global os, prevos, xa,ya,xb,yb,xc,yc,xd,yd
+    alfa = -np.pi / 200
+    if(os == 1): # point a axis
+        xb, yb = obrot(xb, yb, xa, ya, alfa)
+        xc, yc = obrot(xc, yc, xa, ya, alfa)
+        xd, yd = obrot(xd, yd, xa, ya, alfa)
+        if(yb<=f(xb) and prevos != 2):
+            os = 2
+            prevos = 1
+        elif(yc<=f(xc) and prevos != 3):
+            os = 3
+            prevos = 1
+        elif(yd<=f(xd) and prevos != 4):
+            os = 4
+            prevos = 1
+    elif (os == 2):  # point b axis
+        xa, ya = obrot(xa, ya, xb, yb, alfa)
+        xc, yc = obrot(xc, yc, xb, yb, alfa)
+        xd, yd = obrot(xd, yd, xb, yb, alfa)
+        if (ya <= f(xa) and prevos != 1):
+            os = 1
+            prevos = 2
+        elif (yc <= f(xc) and prevos != 3):
+            os = 3
+            prevos = 2
+        elif (yd <= f(xd) and prevos != 4):
+            os = 4
+            prevos = 2
+    elif (os == 3):  # point c axis
+        xa, ya = obrot(xa, ya, xc, yc, alfa)
+        xb, yb = obrot(xb, yb, xc, yc, alfa)
+        xd, yd = obrot(xd, yd, xc, yc, alfa)
+        if (ya <= f(xa) and prevos != 1):
+            os = 1
+            prevos = 3
+        elif (yb <= f(xb) and prevos != 2):
+            os = 2
+            prevos = 3
+        elif (yd <= f(xd) and prevos != 4):
+            os = 4
+            prevos = 3
+    elif (os == 4):  # point d axis
+        xa, ya = obrot(xa, ya, xd, yd, alfa)
+        xb, yb = obrot(xb, yb, xd, yd, alfa)
+        xc, yc = obrot(xc, yc, xd, yd, alfa)
+        if (ya <= f(xa) and prevos != 1):
+            os = 1
+            prevos = 4
+        elif (yb <= f(xb) and prevos != 2):
+            os = 2
+            prevos = 4
+        elif (yc <= f(xc) and prevos != 3):
+            os = 3
+            prevos = 4
 
-    #t = np.arange(0, 2*3.1416, 0.03)
-    t = np.linspace(0, 2*3.1416, 6)
-    r=1
-    krokx = x[i]
-    kroky = y[i]
-    korekcjax = -r*np.sin(katnach[i])
-    korekcjay = r*np.cos(katnach[i])
-    #krokxprev = krokx
-    #krokyprev = kroky
-    kat = - np.pi * i / dzielnik
-    xokregu = r*np.cos(t+kat) + krokx + korekcjax
-    yokregu = r*np.sin(t+kat) + kroky + korekcjay
-    kolo.set_xdata(xokregu)
-    kolo.set_ydata(yokregu)
+    figura.set_xdata([xa,xb,xc,xd,xa])
+    figura.set_ydata(np.zeros(5))
+    figura.set_3d_properties([ya,yb,yc,yd,ya])
+    xdat = [xa,xb,xc,xd,xa]
+    ydat = np.linspace(-1, 0, 2)
+    zdat = np.array([[ya,yb,yc,yd,ya],[ya,yb,yc,yd,ya]])
+    Xdat, Ydat = np.meshgrid(xdat,ydat)
 
-    xwodz = r*np.cos(kat) + krokx + korekcjax
-    ywodz = r*np.sin(kat) + kroky + korekcjay
-    promien.set_xdata([krokx + korekcjax, xwodz])
-    promien.set_ydata([kroky + korekcjay, ywodz])
-    sladx.append(xwodz)
-    slady.append(ywodz)
-    slad.set_data(sladx, slady)
-    return kolo, promien, slad
+    sladx.append(xa)
+    slady.append(ya)
+    sladz.append(-1)
+    slad.set_data(sladx,sladz)
+    slad.set_3d_properties(slady)
+    ax.clear()
+    ax.set_xlim(0,30)
+    ax.set_zlim(-5,10)
+    ax.set_ylim(-5,5)
+    ax.plot_surface(X,Z,Y)
+    ax.plot_surface(Xdat,Ydat,zdat)
+    ax.plot(sladx,sladz,slady)
 
-animation = animation.FuncAnimation(fig, frame, frames=np.arange(len(x) - 1), interval=1, repeat=False)
-plt.show()
+if __name__ == "__main__":
+    animation = anim.FuncAnimation(fig, frame, frames=lklatek, interval=1)
+    plt.show()
